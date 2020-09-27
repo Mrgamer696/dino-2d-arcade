@@ -6,19 +6,17 @@ sys.path.insert(0, '../../')
 import os
 import pygame
 import pygame_menu
-
 from random import randrange
+from main import App
 
-# -----------------------------------------------------------------------------
-# Constants and global variables
-# -----------------------------------------------------------------------------
+
 ABOUT = ['pygame-menu {0}'.format('1.0'),
          'Author: @{0}'.format('Mr.gamer'),
          '',  # new line
          'Github: {0}'.format('')]
 DIFFICULTY = ['EASY']
 FPS = 60.0
-WINDOW_SIZE = (640, 480)
+WINDOW_SIZE = (1920, 1080)
 
 clock = None  # type: pygame.time.Clock
 main_menu = None  # type: pygame_menu.Menu
@@ -65,9 +63,7 @@ def play_function(difficulty, font, test=False):
     :type test: bool
     :return: None
     """
-    assert isinstance(difficulty, (tuple, list))
     difficulty = difficulty[0]
-    assert isinstance(difficulty, str)
 
     # Define globals
     global main_menu
@@ -82,9 +78,6 @@ def play_function(difficulty, font, test=False):
     else:
         raise Exception('Unknown difficulty {0}'.format(difficulty))
 
-    # Draw random color and text
-    bg_color = random_color()
-    f_width = f.get_size()[0]
 
     # Reset main menu and disable
     # You also can set another menu, like a 'pause menu', or just use the same
@@ -92,34 +85,8 @@ def play_function(difficulty, font, test=False):
     main_menu.disable()
     main_menu.reset(1)
 
-    while True:
-
-        # noinspection PyUnresolvedReferences
-        clock.tick(60)
-
-        # Application events
-        events = pygame.event.get()
-        for e in events:
-            if e.type == pygame.QUIT:
-                exit()
-            elif e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_ESCAPE:
-                    main_menu.enable()
-
-                    # Quit this function, then skip to loop of main-menu on line 317
-                    return
-
-        # Pass events to main_menu
-        main_menu.update(events)
-
-        # Continue playing
-        surface.fill(bg_color)
-        surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
-        pygame.display.flip()
-
-        # If test returns
-        if test:
-            break
+    game = App(difficulty)
+    game.on_execute()
 
 
 def main_background():
@@ -155,7 +122,7 @@ def main(test=False):
     os.environ['SDL_VIDEO_CENTERED'] = '1'
 
     # Create pygame screen and objects
-    surface = pygame.display.set_mode(WINDOW_SIZE)
+    surface = pygame.display.set_mode([0, 0], pygame.FULLSCREEN)
     pygame.display.set_caption('Example - Game Selector')
     clock = pygame.time.Clock()
 
@@ -170,7 +137,7 @@ def main(test=False):
     )
 
     submenu_theme = pygame_menu.themes.THEME_DEFAULT.copy()
-    submenu_theme.widget_font_size = 15
+    submenu_theme.widget_font_size = 40
     play_submenu = pygame_menu.Menu(
         height=WINDOW_SIZE[1] * 0.5,
         theme=submenu_theme,
@@ -184,7 +151,7 @@ def main(test=False):
     play_menu.add_button('Start',  # When pressing return -> play(DIFFICULTY[0], font)
                          play_function,
                          DIFFICULTY,
-                         pygame.font.Font(pygame_menu.font.FONT_FRANCHISE, 30))
+                         pygame.font.Font(pygame_menu.font.FONT_FRANCHISE, 40))
     play_menu.add_selector('Select difficulty ',
                            [('1 - Easy', 'EASY'),
                             ('2 - Medium', 'MEDIUM'),
@@ -209,7 +176,7 @@ def main(test=False):
         width=WINDOW_SIZE[0] * 0.6,
     )
     for m in ABOUT:
-        about_menu.add_label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=20)
+        about_menu.add_label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=40)
     about_menu.add_label('')
     about_menu.add_button('Return to menu', pygame_menu.events.BACK)
 
@@ -251,6 +218,7 @@ def main(test=False):
         # Main menu
         main_menu.mainloop(surface, main_background, disable_loop=test, fps_limit=FPS)
 
+        pygame.init()
         # Flip surface
         pygame.display.flip()
 

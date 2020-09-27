@@ -10,7 +10,7 @@ from random import randint
 
 
 class App:
-    def __init__(self, window_width=800, window_height=600, direction='R'):
+    def __init__(self, difficulty, window_width=800, window_height=600, direction='R'):
         self.all_sprites = Group()
         self.items = Group()
         self.bonuses = Group()
@@ -18,7 +18,13 @@ class App:
         self.window_width = window_width
         self.window_height = window_height
         self.direction = direction
-        self.items_count = 6
+
+        if difficulty == "EASY":
+            self.items_count = 3
+        elif difficulty == "MEDIUM":
+            self.items_count = 5
+        elif difficulty == "HARD":
+            self.items_count = 7
         self.running = True
         self.display_surf = None
         self.image_surf = None
@@ -26,6 +32,7 @@ class App:
         self.red_heart, self.black_heart = self.load_hearts()
         self.clock = pygame.time.Clock()
         self.lost = False
+        self.difuculty = difficulty
 
     def load_hearts(self):
         red_heart = pygame.image.load('resources/images/live_active.png')
@@ -35,7 +42,6 @@ class App:
         gold_heart = pygame.image.load('resources/images/live_bonus.png')
         gold_heart = pygame.transform.scale(gold_heart, (128, 128))
         return red_heart, black_heart
-
 
     def on_init(self):
         pygame.init()
@@ -58,7 +64,7 @@ class App:
         self.all_sprites.add(self.player)
 
         for i in range(self.items_count):
-            item = FruitItem(self.window_width, self.window_height)
+            item = FruitItem(self.window_width, self.window_height, self.difuculty)
             self.all_sprites.add(item)
             self.items.add(item)
 
@@ -110,11 +116,12 @@ class App:
             elif keys[pygame.K_ESCAPE]:
                 self.running = False
 
-            guess = randint(1, 400)
-            if guess == 7:
-                bonus = BonusItem(self.window_width, self.window_height)
-                self.bonuses.add(bonus)
-                self.all_sprites.add(bonus)
+            if self.difuculty != "EASY":
+                guess = randint(1, 400)
+                if self.difuculty == "MEDIUM" and guess == 7 or self.difuculty == "HARD" and 20 <= guess <= 24:
+                        bonus = BonusItem(self.window_width, self.window_height, self.difuculty)
+                        self.bonuses.add(bonus)
+                        self.all_sprites.add(bonus)
 
 
             collided = spritecollide(self.player, self.items, False)
@@ -146,8 +153,9 @@ class App:
         pygame.quit()
 
 
-game = App()
-game.on_execute()
+if __name__ == "__main__":
+    game = App()
+    game.on_execute()
 
 
 
